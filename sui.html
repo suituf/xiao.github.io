@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>藏语词汇练习</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Tibetan aesthetic support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Tibetan:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tibetan: {
+                            red: '#9B2226',
+                            crimson: '#AE2012',
+                            gold: '#D4A373',
+                            yellow: '#EE9B00',
+                            deepBlue: '#005F73',
+                            dark: '#1D2D44',
+                            lightBg: '#F8F9FA'
+                        }
+                    },
+                    fontFamily: {
+                        tibetan: ['"Noto Serif Tibetan"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .tibetan-text {
+            font-family: 'Noto Serif Tibetan', serif;
+            line-height: 1.4;
+        }
+
+        /* Standard animations */
+        @keyframes pulse-success {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+        @keyframes shake-error {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .animate-success {
+            animation: pulse-success 0.4s ease-in-out;
+        }
+        .animate-error {
+            animation: shake-error 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between font-sans selection:bg-amber-200 selection:text-amber-900">
+
+    <!-- Header -->
+    <header class="bg-tibetan-red text-amber-50 shadow-md border-b-4 border-tibetan-yellow">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-tibetan-yellow flex items-center justify-center text-tibetan-red text-xl font-bold shadow">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">ཐུགས་རྗེ་ཆ་རིག་པའི་སློང་མོ།</h1>
+                    <p class="text-xs text-amber-200 opacity-90">基础词汇学习与测验</p>
+                </div>
+            </div>
+            <button id="reset-btn" onclick="app.restartApp()" class="text-xs bg-black/20 hover:bg-black/30 text-amber-100 px-3 py-1.5 rounded-lg transition border border-amber-300/30 flex items-center gap-1">
+                <i class="fa-solid fa-rotate-right"></i> 重置
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-2xl w-full mx-auto p-4 flex-1 flex flex-col justify-center">
+
+        <!-- Quiz Card Box -->
+        <div id="quiz-card" class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden transition-all duration-300">
+            
+            <!-- Progress Bar Section -->
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">进度</span>
+                    <span id="progress-text" class="text-sm font-bold text-tibetan-deepBlue">1 / 15</span>
+                </div>
+                
+                <!-- Progress Indicator Bar -->
+                <div class="w-full sm:w-48 bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-tibetan-yellow h-full transition-all duration-300 rounded-full" style="width: 6.66%;"></div>
+                </div>
+
+                <!-- Stats Display -->
+                <div class="flex items-center space-x-4 text-xs font-medium text-slate-600">
+                    <span class="flex items-center gap-1 text-emerald-600"><i class="fa-solid fa-circle-check"></i> <span id="correct-count">0</span></span>
+                    <span class="flex items-center gap-1 text-rose-500"><i class="fa-solid fa-circle-xmark"></i> <span id="wrong-count">0</span></span>
+                </div>
+            </div>
+
+            <!-- Practice Card Core -->
+            <div class="p-6 md:p-10 text-center flex flex-col items-center">
+
+                <!-- Mode Options Switcher -->
+                <div class="mb-6 inline-flex bg-slate-100 p-1 rounded-xl text-xs font-medium text-slate-600">
+                    <button id="mode-seq" onclick="app.setMode('sequential')" class="px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-sm transition">顺序模式</button>
+                    <button id="mode-rand" onclick="app.setMode('random')" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition">随机模式</button>
+                </div>
+
+                <!-- Tibetan Word Display -->
+                <div class="my-4 py-6 px-8 bg-amber-50/50 rounded-2xl border border-amber-100/80 w-full flex flex-col items-center justify-center min-h-[160px] shadow-inner">
+                    <span class="text-xs text-amber-800/60 font-medium mb-2">请翻译此藏文词汇</span>
+                    <h2 id="tibetan-word" class="tibetan-text text-5xl md:text-6xl font-bold text-tibetan-dark tracking-wide my-2 drop-shadow-sm select-none">
+                        མིག་ཆུ།
+                    </h2>
+                </div>
+
+                <!-- Input Form -->
+                <form id="answer-form" onsubmit="app.checkAnswer(event)" class="w-full max-w-md mt-4 space-y-4">
+                    <div class="relative">
+                        <input type="text" id="user-input" autocomplete="off" placeholder="请输入对应的中文含义..." 
+                            class="w-full px-5 py-3.5 text-center text-lg border-2 border-slate-300 rounded-xl focus:outline-none focus:border-tibetan-deepBlue focus:ring-4 focus:ring-tibetan-deepBlue/10 transition placeholder-slate-400">
+                    </div>
+
+                    <!-- Feedback Alert Msg Container -->
+                    <div id="feedback-msg" class="min-h-[28px] text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2"></div>
+
+                    <!-- Action Buttons Group -->
+                    <div class="grid grid-cols-3 gap-3 pt-2">
+                        <button type="button" onclick="app.showHint()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-xl transition flex items-center justify-center gap-1.5">
+                            <i class="fa-regular fa-lightbulb text-amber-500"></i> 提示
+                        </button>
+                        <button type="button" onclick="app.skipWord()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-xl transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-forward-step text-slate-400"></i> 跳过
+                        </button>
+                        <button type="submit" id="submit-btn" class="px-4 py-2.5 bg-tibetan-red hover:bg-tibetan-crimson text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-1.5 active:scale-95">
+                            提交 <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Summary View (Hidden by default) -->
+        <div id="result-card" class="hidden bg-white rounded-2xl shadow-xl border border-slate-200 p-8 text-center animate-fade-in">
+            <div class="w-20 h-20 bg-amber-100 text-tibetan-yellow rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-inner">
+                <i class="fa-solid fa-trophy text-tibetan-yellow"></i>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-slate-800 mb-1">练习完成！</h2>
+            <p class="text-sm text-slate-500 mb-6">你已经完成了全部 15 个藏语词汇的测试。</p>
+
+            <!-- Score Cards Grid -->
+            <div class="grid grid-cols-3 gap-4 mb-8 max-w-md mx-auto">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div class="text-xs text-slate-500 mb-1">总题数</div>
+                    <div class="text-xl font-bold text-slate-700" id="res-total">15</div>
+                </div>
+                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                    <div class="text-xs text-emerald-600 mb-1">一次答对</div>
+                    <div class="text-xl font-bold text-emerald-600" id="res-score">0</div>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                    <div class="text-xs text-amber-600 mb-1">正确率</div>
+                    <div class="text-xl font-bold text-amber-600" id="res-accuracy">0%</div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="app.restartApp()" class="px-8 py-3.5 bg-tibetan-red hover:bg-tibetan-crimson text-white font-bold text-base rounded-xl shadow-lg hover:shadow-xl transition transform active:scale-95 inline-flex items-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> 重新开始练习
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer with Word List Toggle -->
+    <footer class="bg-white border-t border-slate-200 py-4 px-4 text-center text-xs text-slate-500">
+        <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>ཐུགས་རྗེ་ཆེ་zzc།</span>
+            <button onclick="app.toggleWordListModal()" class="text-tibetan-deepBlue hover:underline flex items-center gap-1 font-medium">
+                <i class="fa-solid fa-list-ul"></i> 查看全部15个词汇对照表
+            </button>
+        </div>
+    </footer>
+
+    <!-- Word List Modal -->
+    <div id="word-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] flex flex-col overflow-hidden">
+            <div class="p-4 bg-tibetan-red text-white flex justify-between items-center">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="fa-solid fa-book-open"></i> 藏汉词汇对照表 (共15词)
+                </h3>
+                <button onclick="app.toggleWordListModal()" class="text-amber-200 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto divide-y divide-slate-100 flex-1">
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <!-- Vocabulary item rows rendered by JS -->
+                    <div id="vocabulary-grid" class="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+                </div>
+            </div>
+            <div class="p-3 bg-slate-50 border-t text-right">
+                <button onclick="app.toggleWordListModal()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const VOCABULARY = [
+            { tibetan: "མིག་ཆུ།", chinese: "眼泪" },
+            { tibetan: "ནག་པོ།", chinese: "黑色" },
+            { tibetan: "ཁང་པ།", chinese: "房子" },
+            { tibetan: "ནང་མི།", chinese: "家人" },
+            { tibetan: "ཐང་ག།", chinese: "唐卡" },
+            { tibetan: "གོང་མ།", chinese: "皇上" },
+            { tibetan: "བོད་པ།", chinese: "藏族人" },
+            { tibetan: "པད་མ།", chinese: "莲花" },
+            { tibetan: "ནད་པ།", chinese: "病人" },
+            { tibetan: "ཡོན་ཏན།", chinese: "知识" },
+            { tibetan: "ནན་ཏན།", chinese: "认真" },
+            { tibetan: "ཐོབ་ཐང།", chinese: "身份" },
+            { tibetan: "ཡབ་ཡུམ།", chinese: "父母" },
+            { tibetan: "དམ་པའེ་དོན་།", chinese: "正理" },
+            { tibetan: "ནོར་བུ།", chinese: "宝贝" }
+        ];
+
+        class TibetanApp {
+            constructor() {
+                this.words = [...VOCABULARY];
+                this.currentIndex = 0;
+                this.mode = 'sequential'; // 'sequential' | 'random'
+                this.correctCount = 0;
+                this.wrongCount = 0;
+                this.firstAttemptCorrect = 0; // Tracks clean correct answers for accuracy
+                this.hasAttemptedCurrentWord = false;
+
+                // DOM Elements Cache
+                this.dom = {
+                    tibetanWord: document.getElementById('tibetan-word'),
+                    userInput: document.getElementById('user-input'),
+                    feedbackMsg: document.getElementById('feedback-msg'),
+                    progressText: document.getElementById('progress-text'),
+                    progressBar: document.getElementById('progress-bar'),
+                    correctCount: document.getElementById('correct-count'),
+                    wrongCount: document.getElementById('wrong-count'),
+                    quizCard: document.getElementById('quiz-card'),
+                    resultCard: document.getElementById('result-card'),
+                    wordModal: document.getElementById('word-modal'),
+                    vocabularyGrid: document.getElementById('vocabulary-grid'),
+                    modeSeq: document.getElementById('mode-seq'),
+                    modeRand: document.getElementById('mode-rand'),
+                    resTotal: document.getElementById('res-total'),
+                    resScore: document.getElementById('res-score'),
+                    resAccuracy: document.getElementById('res-accuracy')
+                };
+
+                this.initSoundEffects();
+                this.renderModalGrid();
+                this.restartApp();
+            }
+
+            // Audio Synthesis Feedback System
+            initSoundEffects() {
+                this.audioCtx = null;
+            }
+
+            playAudio(type) {
+                try {
+                    if (!this.audioCtx) {
+                        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    const ctx = this.audioCtx;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    if (type === 'success') {
+                        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                        osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.15); // E5
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                        osc.start(ctx.currentTime);
+                        osc.stop(ctx.currentTime + 0.3);
+                    } else if (type === 'error') {
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+                        osc.frequency.linearRampToValueAtTime(140, ctx.currentTime + 0.2);
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                        osc.start(ctx.currentTime);
+                        osc.stop(ctx.currentTime + 0.25);
+                    }
+                } catch (e) {
+                    // Audio context disabled or restricted by browser
+                }
+            }
+
+            restartApp() {
+                if (this.mode === 'random') {
+                    this.words = [...VOCABULARY].sort(() => Math.random() - 0.5);
+                } else {
+                    this.words = [...VOCABULARY];
+                }
+
+                this.currentIndex = 0;
+                this.correctCount = 0;
+                this.wrongCount = 0;
+                this.firstAttemptCorrect = 0;
+                this.hasAttemptedCurrentWord = false;
+
+                this.dom.quizCard.classList.remove('hidden');
+                this.dom.resultCard.classList.add('hidden');
+                
+                this.updateStats();
+                this.loadWord();
+            }
+
+            setMode(mode) {
+                if (this.mode === mode) return;
+                this.mode = mode;
+
+                if (mode === 'sequential') {
+                    this.dom.modeSeq.className = "px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-sm transition";
+                    this.dom.modeRand.className = "px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition";
+                } else {
+                    this.dom.modeRand.className = "px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-sm transition";
+                    this.dom.modeSeq.className = "px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition";
+                }
+
+                this.restartApp();
+            }
+
+            loadWord() {
+                if (this.currentIndex >= this.words.length) {
+                    this.finishQuiz();
+                    return;
+                }
+
+                const current = this.words[this.currentIndex];
+                this.dom.tibetanWord.textContent = current.tibetan;
+                this.dom.userInput.value = '';
+                this.dom.feedbackMsg.textContent = '';
+                this.dom.feedbackMsg.className = "min-h-[28px] text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2";
+                this.dom.userInput.focus();
+                
+                this.hasAttemptedCurrentWord = false;
+                this.updateProgressBar();
+            }
+
+            checkAnswer(e) {
+                if (e) e.preventDefault();
+
+                const input = this.dom.userInput.value.trim();
+                const target = this.words[this.currentIndex];
+
+                if (!input) {
+                    this.showFeedback("请输入中文翻译", "text-amber-600");
+                    return;
+                }
+
+                if (input === target.chinese) {
+                    // Correct Answer
+                    this.playAudio('success');
+                    this.showFeedback("正确！优秀！", "text-emerald-600");
+                    
+                    this.dom.quizCard.classList.remove('animate-error');
+                    this.dom.quizCard.classList.add('animate-success');
+                    setTimeout(() => this.dom.quizCard.classList.remove('animate-success'), 400);
+
+                    if (!this.hasAttemptedCurrentWord) {
+                        this.firstAttemptCorrect++;
+                    }
+                    this.correctCount++;
+                    this.updateStats();
+
+                    // Advance to next word after short delay
+                    setTimeout(() => {
+                        this.currentIndex++;
+                        this.loadWord();
+                    }, 800);
+
+                } else {
+                    // Wrong Answer
+                    this.playAudio('error');
+                    this.hasAttemptedCurrentWord = true;
+                    this.wrongCount++;
+                    this.updateStats();
+
+                    this.showFeedback("回答错误，请重试或点击提示！", "text-rose-500");
+
+                    this.dom.quizCard.classList.remove('animate-success');
+                    this.dom.quizCard.classList.add('animate-error');
+                    setTimeout(() => this.dom.quizCard.classList.remove('animate-error'), 400);
+                    
+                    this.dom.userInput.select();
+                }
+            }
+
+            showHint() {
+                const target = this.words[this.currentIndex];
+                const hint = `含义包含 ${target.chinese.length} 个字，首字为 “${target.chinese.charAt(0)}”`;
+                this.showFeedback(`💡 提示：${hint}`, "text-amber-600");
+            }
+
+            skipWord() {
+                const target = this.words[this.currentIndex];
+                this.hasAttemptedCurrentWord = true;
+                this.wrongCount++;
+                this.updateStats();
+
+                this.showFeedback(`已跳过。答案是：${target.chinese}`, "text-slate-500");
+                
+                setTimeout(() => {
+                    this.currentIndex++;
+                    this.loadWord();
+                }, 1200);
+            }
+
+            showFeedback(text, colorClass) {
+                this.dom.feedbackMsg.textContent = text;
+                this.dom.feedbackMsg.className = `min-h-[28px] text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${colorClass}`;
+            }
+
+            updateProgressBar() {
+                const currentNum = this.currentIndex + 1;
+                const total = this.words.length;
+                const percentage = (currentNum / total) * 100;
+
+                this.dom.progressText.textContent = `${currentNum} / ${total}`;
+                this.dom.progressBar.style.width = `${percentage}%`;
+            }
+
+            updateStats() {
+                this.dom.correctCount.textContent = this.correctCount;
+                this.dom.wrongCount.textContent = this.wrongCount;
+            }
+
+            finishQuiz() {
+                this.dom.quizCard.classList.add('hidden');
+                this.dom.resultCard.classList.remove('hidden');
+
+                const total = this.words.length;
+                const accuracy = Math.round((this.firstAttemptCorrect / total) * 100);
+
+                this.dom.resTotal.textContent = total;
+                this.dom.resScore.textContent = this.firstAttemptCorrect;
+                this.dom.resAccuracy.textContent = `${accuracy}%`;
+            }
+
+            toggleWordListModal() {
+                this.dom.wordModal.classList.toggle('hidden');
+            }
+
+            renderModalGrid() {
+                this.dom.vocabularyGrid.innerHTML = VOCABULARY.map((item, idx) => `
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100 hover:bg-amber-50/50 transition">
+                        <span class="text-xs text-slate-400 font-mono w-5">${idx + 1}.</span>
+                        <span class="tibetan-text text-xl font-bold text-tibetan-dark flex-1 text-left px-2">${item.tibetan}</span>
+                        <span class="text-xs font-semibold text-slate-600 bg-white px-2 py-1 rounded shadow-sm">${item.chinese}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Initialize App on DOM Content Loaded
+        let app;
+        window.addEventListener('DOMContentLoaded', () => {
+            app = new TibetanApp();
+        });
+    </script>
+</body>
+</html>
