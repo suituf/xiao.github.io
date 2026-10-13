@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>藏语词汇学习练习</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Tibetan aesthetic support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Tibetan:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tibetan: {
+                            red: '#9B2226',
+                            crimson: '#AE2012',
+                            gold: '#D4A373',
+                            yellow: '#EE9B00',
+                            deepBlue: '#005F73',
+                            dark: '#1D2D44',
+                            lightBg: '#F8F9FA'
+                        }
+                    },
+                    fontFamily: {
+                        tibetan: ['"Noto Serif Tibetan"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .tibetan-text {
+            font-family: 'Noto Serif Tibetan', serif;
+            line-height: 1.4;
+        }
+
+        /* Standard animations */
+        @keyframes pulse-success {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+        @keyframes shake-error {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .animate-success {
+            animation: pulse-success 0.4s ease-in-out;
+        }
+        .animate-error {
+            animation: shake-error 0.4s ease-in-out;
+        }
+    </style>
